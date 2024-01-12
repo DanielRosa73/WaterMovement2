@@ -95,7 +95,7 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(0);
 
-    Shader shaderProgram("C:\\Users\\justi\\Desktop\\OGLA\\POGLA\\shaders\\grid.vtx.glsl", "C:\\Users\\justi\\Desktop\\OGLA\\POGLA\\shaders\\grid.frg.glsl");
+    Shader shaderProgram("..\\..\\shaders\\grid.vtx.glsl", "..\\..\\shaders\\grid.frg.glsl");
 
     int height, width;
     glfwGetWindowSize(window, &width, &height);
