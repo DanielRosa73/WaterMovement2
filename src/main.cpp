@@ -16,20 +16,41 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, Camera& cam, float deltaTime);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
-// Fonction pour générer les sommets de la grille
-std::vector<float> generateGridVertices(int gridSize) {
-    std::vector<float> vertices;
-    for (int i = -gridSize; i <= gridSize; i++) {
-        // Ligne verticale
-        vertices.push_back((float)i); vertices.push_back(0.0f); vertices.push_back((float)-gridSize);
-        vertices.push_back((float)i); vertices.push_back(0.0f); vertices.push_back((float)gridSize);
 
-        // Ligne horizontale
-        vertices.push_back((float)-gridSize); vertices.push_back(0.0f); vertices.push_back((float)i);
-        vertices.push_back((float)gridSize); vertices.push_back(0.0f); vertices.push_back((float)i);
+void generateGrid(int gridSize, std::vector<GLfloat>& vertices, std::vector<GLuint>& indices) {
+    // Générer les vertices pour la grille
+    for (int y = 0; y <= gridSize; ++y) {
+        for (int x = 0; x <= gridSize; ++x) {
+            float xPos = (float)x - 0.5f;
+            float yPos = (float)y - 0.5f;
+
+            vertices.push_back(xPos); // Coordonnée X
+            vertices.push_back(x == gridSize / 2 && y == gridSize / 2 ? 10.0f : 0.0f); // Coordonnée Y
+            vertices.push_back(yPos); // Coordonnée Z (tous les points sont sur un plan)
+        }
     }
-    return vertices;
+
+    for (int y = 0; y < gridSize; ++y) {
+        for (int x = 0; x < gridSize; ++x) {
+            GLuint topLeft = y * (gridSize + 1) + x;
+            GLuint topRight = topLeft + 1;
+            GLuint bottomLeft = (y + 1) * (gridSize + 1) + x;
+            GLuint bottomRight = bottomLeft + 1;
+
+            // Premier triangle
+            indices.push_back(topLeft);
+            indices.push_back(bottomLeft);
+            indices.push_back(topRight);
+
+            // Deuxième triangle
+            indices.push_back(topRight);
+            indices.push_back(bottomLeft);
+            indices.push_back(bottomRight);
+        }
+    }
 }
+
+
 
 
 int main() {
@@ -67,17 +88,11 @@ int main() {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    GLfloat vertices[] {
-        -0.5f, -0.5f, 0.0f,
-        -0.5f,  0.5f, 0.0f,
-         0.5f,  0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f
-    };
+    std::vector<GLfloat> vertices;
+    std::vector<GLuint> indices;
 
-    GLuint indices[] {
-        0, 1, 2,
-        2, 0, 3
-    };
+    // Générer une grille de taille 10x10
+    generateGrid(100, vertices, indices);
 
     GLuint VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -86,12 +101,15 @@ int main() {
 
     glBindVertexArray(VAO);
 
+    // Configurer le buffer de vertex
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
 
+    // Configurer le buffer d'indices
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
+    // Définir le format des données de vertex
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -100,6 +118,7 @@ int main() {
     int height, width;
     glfwGetWindowSize(window, &width, &height);
     Camera cam(height, width);
+    cam.setPosition(glm::vec3(0.0, 0.0, 2.0));
     glfwSetWindowUserPointer(window, &cam);
     
     shaderProgram.use();
@@ -139,7 +158,7 @@ int main() {
 
         // Rendu
         // (Ici, vous pouvez ajouter le code de rendu)
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
         // Échange des tampons et sondage des événements d'IO
 
         glfwSwapBuffers(window);
