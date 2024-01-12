@@ -7,6 +7,8 @@
 #include <camera.h>
 #include <graphics/shader.h>
 
+#include <cmath>
+
 
 #define WINDOW_HEIGHT 900
 #define WINDOW_WITDTH 1440
@@ -25,7 +27,7 @@ void generateGrid(int gridSize, std::vector<GLfloat>& vertices, std::vector<GLui
             float yPos = (float)y - 0.5f;
 
             vertices.push_back(xPos); // Coordonnée X
-            vertices.push_back(x == gridSize / 2 && y == gridSize / 2 ? 10.0f : 0.0f); // Coordonnée Y
+            vertices.push_back(sin(x * y)); // Coordonnée Y
             vertices.push_back(yPos); // Coordonnée Z (tous les points sont sur un plan)
         }
     }

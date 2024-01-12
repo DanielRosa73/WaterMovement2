@@ -16,6 +16,7 @@ class Shader {
 	public:
 		Shader(const char* vertexPath, const char* fragmentPath);
 		Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath);
+		Shader(const char* vertexPath, const char* fragmentPath, const char* tesselationControlPath, const char* tesselationEvaluationPath);
 
 		unsigned int id;
 		
@@ -33,6 +34,8 @@ class Shader {
 		void setMat2(const std::string& name, const glm::mat2& matrix) const;
 		void setMat3(const std::string& name, const glm::mat3& matrix) const;
 		void setMat4(const std::string& name, const glm::mat4& matrix) const;
+	private:
+		unsigned int compileShader(const char* shaderCode, GLenum shaderType);
 };
 
 #endif
