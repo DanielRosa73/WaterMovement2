@@ -115,7 +115,7 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(0);
 
-    Shader shaderProgram("..\\..\\shaders\\grid.vtx.glsl", "..\\..\\shaders\\grid.frg.glsl");
+    Shader shaderProgram("/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.vtx.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.frg.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.tess.ctrl.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.tess.eval.glsl");
 
     int height, width;
     glfwGetWindowSize(window, &width, &height);
@@ -124,6 +124,9 @@ int main() {
     glfwSetWindowUserPointer(window, &cam);
     
     shaderProgram.use();
+
+    glPatchParameteri(GL_PATCH_VERTICES,3);
+
     glBindVertexArray(VAO);
 
     double lastTime = glfwGetTime();
@@ -160,7 +163,7 @@ int main() {
 
         // Rendu
         // (Ici, vous pouvez ajouter le code de rendu)
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_PATCHES, indices.size(), GL_UNSIGNED_INT, 0);
         // Échange des tampons et sondage des événements d'IO
 
         glfwSwapBuffers(window);
