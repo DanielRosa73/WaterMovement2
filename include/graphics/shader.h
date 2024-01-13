@@ -17,6 +17,7 @@ class Shader {
 		Shader(const char* vertexPath, const char* fragmentPath);
 		Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath);
 		Shader(const char* vertexPath, const char* fragmentPath, const char* tesselationControlPath, const char* tesselationEvaluationPath);
+		Shader(const char* computePath);
 
 		unsigned int id;
 		

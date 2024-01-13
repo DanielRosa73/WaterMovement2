@@ -215,8 +215,61 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* tes
     glDeleteShader(fragment);
     glDeleteShader(tesselationControl);
     glDeleteShader(tesselationEvaluation);
-
 }
+
+
+// Constructeur pour le compute shader
+Shader::Shader(const char* computePath) {
+    std::string computeCode;
+    std::ifstream cShaderFile;
+    // ensure ifstream objects can throw exceptions:
+    cShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    try {
+        // open file
+        cShaderFile.open(computePath);
+        std::stringstream cShaderStream;
+        // read file's buffer contents into streams
+        cShaderStream << cShaderFile.rdbuf();
+        // close file handlers
+        cShaderFile.close();
+        // convert stream into string
+        computeCode = cShaderStream.str();
+    } catch (std::ifstream::failure e) {
+        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+    }
+    const char* cShaderCode = computeCode.c_str();
+
+    // compile shaders
+    unsigned int compute;
+    int success;
+    char infoLog[512];
+
+    // compute Shader
+    compute = glCreateShader(GL_COMPUTE_SHADER);
+    glShaderSource(compute, 1, &cShaderCode, NULL);
+    glCompileShader(compute);
+    // print compile errors if any
+    glGetShaderiv(compute, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(compute, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::COMPUTE::COMPILATION_FAILED\n" << infoLog << std::endl;
+    };
+
+    // shader Program
+    id = glCreateProgram();
+    glAttachShader(id, compute);
+    glLinkProgram(id);
+    // print linking errors if any
+    glGetProgramiv(id, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(id, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+    }
+
+    // delete the shader as it's linked into our program now and no longer necessary
+    glDeleteShader(compute);
+}
+
 
 unsigned int Shader::compileShader(const char* shaderCode, GLenum shaderType) {
     unsigned int shader = glCreateShader(shaderType);
