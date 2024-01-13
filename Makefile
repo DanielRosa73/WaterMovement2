@@ -5,7 +5,7 @@ CXX = g++
 CXXFLAGS = -Wall -Iinclude -Iextern/GLAD -Iextern/GLM -Iextern/STB
 
 # Source files
-SOURCES = src/main.cpp src/graphics/shader.cpp src/graphics/texture.cpp extern/GLAD/glad.c extern/STB/stb/stb_image.cpp
+SOURCES = src/main.cpp src/graphics/shader.cpp src/graphics/texture.cpp src/camera.cpp extern/GLAD/glad.c extern/STB/stb/stb_image.cpp
 
 # Object files
 OBJECTS = $(SOURCES:.cpp=.o)
