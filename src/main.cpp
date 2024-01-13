@@ -12,6 +12,10 @@
 
 #define WINDOW_HEIGHT 900
 #define WINDOW_WITDTH 1440
+#define WATERSIZE 50
+#define GRIDSIZE 50
+
+
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -23,12 +27,13 @@ void generateGrid(int gridSize, std::vector<GLfloat>& vertices, std::vector<GLui
     // Générer les vertices pour la grille
     for (int y = 0; y <= gridSize; ++y) {
         for (int x = 0; x <= gridSize; ++x) {
-            float xPos = (float)x - 0.5f;
-            float yPos = (float)y - 0.5f;
+            float xPos = (float)x - 0.5f * gridSize;
+            float yPos = 0.0f;
+            float zPos = (float)y - 0.5f * gridSize;
 
             vertices.push_back(xPos); // Coordonnée X
-            vertices.push_back(sin(x * y)); // Coordonnée Y
-            vertices.push_back(yPos); // Coordonnée Z (tous les points sont sur un plan)
+            vertices.push_back(yPos); // Coordonnée Y
+            vertices.push_back(zPos); // Coordonnée Z (tous les points sont sur un plan)
         }
     }
 
@@ -94,7 +99,7 @@ int main() {
     std::vector<GLuint> indices;
 
     // Générer une grille de taille 10x10
-    generateGrid(100, vertices, indices);
+    generateGrid(GRIDSIZE, vertices, indices);
 
     GLuint VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -124,6 +129,7 @@ int main() {
     glfwSetWindowUserPointer(window, &cam);
     
     shaderProgram.use();
+    shaderProgram.setInt("WATERSIZE", WATERSIZE);
 
     glPatchParameteri(GL_PATCH_VERTICES,3);
 
@@ -132,14 +138,39 @@ int main() {
     double lastTime = glfwGetTime();
     double lastFPSTime = lastTime; // Variable séparée pour le compteur de FPS
     int nbFrames = 0;
+
+    int currentTextureIndex = 0;
+
+        // Texture creation for water simulation
+    GLuint waterTextures[2];
+    glGenTextures(2, waterTextures);
+    for (int i = 0; i < 2; ++i) {
+        glBindTexture(GL_TEXTURE_2D, waterTextures[i]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+
+        // Create gradient data
+        float spikeyData[WATERSIZE][WATERSIZE] = {0};
+        for (int y = 0; y < WATERSIZE; y+=3) {
+            for (int x = 0; x < WATERSIZE; x+=3) {
+                spikeyData[x][y] = 1.0f;
+            }
+        }
+        // Initialize textures with zeros
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, WATERSIZE, WATERSIZE, 0, GL_RED, GL_FLOAT, spikeyData);
+    }
+
     // Boucle de rendu
     while (!glfwWindowShouldClose(window)) {
-        // Calculer le delta time
+        // Calculate the delta time
         double currentTime = glfwGetTime();
         double deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
-        // Mise à jour du compteur de FPS
+        // Update the FPS counter
         nbFrames++;
         if (currentTime - lastFPSTime >= 1.0) {
             std::stringstream ss;
@@ -150,25 +181,33 @@ int main() {
             lastFPSTime = currentTime;
         }
 
-        // Process input en utilisant deltaTime
+        // Process input using deltaTime
         processInput(window, cam, deltaTime);
 
+        // Clear the screen
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // Entrée
-        processInput(window, cam, deltaTime);
 
+        // Set view and projection matrices in the shader
         shaderProgram.setMat4("view", cam.getViewMatrix());
         shaderProgram.setMat4("projection", cam.getProjectionMatrix());
 
-        // Rendu
-        // (Ici, vous pouvez ajouter le code de rendu)
-        glDrawElements(GL_PATCHES, indices.size(), GL_UNSIGNED_INT, 0);
-        // Échange des tampons et sondage des événements d'IO
+        // Bind the current water texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, waterTextures[currentTextureIndex]);
+        shaderProgram.setInt("waterHeightMap", 0);  // Set the uniform
 
+        // Render the grid
+        glDrawElements(GL_PATCHES, indices.size(), GL_UNSIGNED_INT, 0);
+
+        // Swap the texture index for the next frame
+        currentTextureIndex = 1 - currentTextureIndex;
+
+        // Swap buffers and poll IO events
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
     glBindVertexArray(0);
 
     // Libération des ressources GLFW
