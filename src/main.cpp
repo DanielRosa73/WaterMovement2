@@ -12,8 +12,8 @@
 
 #define WINDOW_HEIGHT 900
 #define WINDOW_WITDTH 1440
-#define WATERSIZE 50
-#define GRIDSIZE 50
+#define WATERSIZE 20
+#define GRIDSIZE 20
 
 
 
@@ -127,7 +127,7 @@ int main() {
     int height, width;
     glfwGetWindowSize(window, &width, &height);
     Camera cam(height, width);
-    cam.setPosition(glm::vec3(0.0, 10.0, 2.0));
+    cam.setPosition(glm::vec3(0.0, 10.0, 70.0));
     glfwSetWindowUserPointer(window, &cam);
     
     shaderProgram.use();
@@ -157,15 +157,19 @@ int main() {
 
         // Create gradient data
         float spikeyData[WATERSIZE][WATERSIZE] = {0};
+        /*
         for (int y = 0; y < WATERSIZE; y+=3) {
             for (int x = 0; x < WATERSIZE; x+=3) {
                 spikeyData[x][y] = 1.0f;
             }
         }
+        */
+        spikeyData[WATERSIZE / 2][WATERSIZE / 2] = -10.0f;
         // Initialize textures with zeros
         glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, WATERSIZE, WATERSIZE, 0, GL_RED, GL_FLOAT, spikeyData);
     }
 
+    double totalTime = 0.0f;
     // Boucle de rendu
     while (!glfwWindowShouldClose(window)) {
         // Calculate the delta time
@@ -189,6 +193,7 @@ int main() {
 
         // Bind the textures for the compute shader
         shaderCompute.use();
+        shaderCompute.setFloat("deltaTime", static_cast<float>(deltaTime));
         shaderCompute.setInt("WATERSIZE", WATERSIZE);
  
         glBindImageTexture(0, waterTextures[currentTextureIndex], 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32F);

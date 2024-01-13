@@ -2,12 +2,13 @@
 
 layout (local_size_x = 16, local_size_y = 16) in;
 
-layout(binding = 0, r32f) uniform image2D currentWaterSurface;
-layout(binding = 1, r32f) uniform image2D nextWaterSurface;
+layout(binding = 0, r32f) uniform image2D currentWaterSurface; // Current state
+layout(binding = 1, r32f) uniform image2D nextWaterSurface;    // Next state
 
-uniform float DAMP = 15.0; // Damping factor
-
-uniform int WATERSIZE;
+uniform float deltaTime;      // Time elapsed since the last update
+uniform int WATERSIZE;        // Size of the water surface grid
+uniform float DAMP = 0.04;    // Damping factor, adjust as necessary
+uniform float waveSpeed = 1.0; // Speed of the wave propagation, adjust as necessary
 
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
@@ -21,8 +22,8 @@ void main() {
         float down = imageLoad(currentWaterSurface, pos + ivec2(0, 1)).r;
 
         // Ripple calculation
-        float newHeight = (left + right + up + down) / 2.0 - currentHeight;
-        newHeight -= newHeight / DAMP;
+        float newHeight = currentHeight + waveSpeed * deltaTime * ((left + right + up + down) / 4.0 - currentHeight);
+        newHeight = mix(currentHeight, newHeight, exp(-DAMP * deltaTime));
 
         // Write the new height to the next water surface
         imageStore(nextWaterSurface, pos, vec4(newHeight, 0.0, 0.0, 0.0));
