@@ -121,15 +121,18 @@ int main() {
     glEnableVertexAttribArray(0);
 
     Shader shaderProgram("/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.vtx.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.frg.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.tess.ctrl.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.tess.eval.glsl");
+    Shader shaderCompute("/home/daniel.rosa/afs/pogla/POGLA/shaders/ripple.comp.glsl");
+
 
     int height, width;
     glfwGetWindowSize(window, &width, &height);
     Camera cam(height, width);
-    cam.setPosition(glm::vec3(0.0, 0.0, 2.0));
+    cam.setPosition(glm::vec3(0.0, 10.0, 2.0));
     glfwSetWindowUserPointer(window, &cam);
     
     shaderProgram.use();
     shaderProgram.setInt("WATERSIZE", WATERSIZE);
+    
 
     glPatchParameteri(GL_PATCH_VERTICES,3);
 
@@ -184,15 +187,29 @@ int main() {
         // Process input using deltaTime
         processInput(window, cam, deltaTime);
 
+        // Bind the textures for the compute shader
+        shaderCompute.use();
+        shaderCompute.setInt("WATERSIZE", WATERSIZE);
+ 
+        glBindImageTexture(0, waterTextures[currentTextureIndex], 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32F);
+        glBindImageTexture(1, waterTextures[1 - currentTextureIndex], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32F);
+
+        // Dispatch the compute shader
+        glDispatchCompute((WATERSIZE + 15) / 16, (WATERSIZE + 15) / 16, 1); // Adjust the dispatch size as needed
+
+        // Synchronize to ensure texture writes are finished before reading in tessellation shader
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
         // Clear the screen
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Set view and projection matrices in the shader
+        shaderProgram.use();
         shaderProgram.setMat4("view", cam.getViewMatrix());
         shaderProgram.setMat4("projection", cam.getProjectionMatrix());
 
-        // Bind the current water texture
+        // Bind the current water texture for rendering
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, waterTextures[currentTextureIndex]);
         shaderProgram.setInt("waterHeightMap", 0);  // Set the uniform
