@@ -211,6 +211,7 @@ int main() {
 
         // Set view and projection matrices in the shader
         shaderProgram.use();
+        shaderProgram.setFloat("deltaTime", static_cast<float>(deltaTime));
         shaderProgram.setMat4("view", cam.getViewMatrix());
         shaderProgram.setMat4("projection", cam.getProjectionMatrix());
 
