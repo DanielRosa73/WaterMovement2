@@ -7,8 +7,8 @@ layout(binding = 1, r32f) uniform image2D currentWaterSurface; // Current state 
 
 uniform float deltaTime;       // Time elapsed since the last update
 uniform int WATERSIZE;         // Size of the water surface grid
-uniform float waveSpeed = 1.0; // Speed of the wave propagation, adjust as necessary
-uniform float dampingFactor = 0.3;
+uniform float waveSpeed = 2.0; // Speed of the wave propagation, adjust as necessary
+uniform float dampingFactor = 1.0;
 
 void main() {
     ivec2 pos = ivec2(gl_GlobalInvocationID.xy);

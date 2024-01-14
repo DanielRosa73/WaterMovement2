@@ -129,7 +129,7 @@ int main() {
     int height, width;
     glfwGetWindowSize(window, &width, &height);
     Camera cam(height, width);
-    cam.setPosition(glm::vec3(0.0, 10.0, 70.0));
+    cam.setPosition(glm::vec3(0.0, 10.0, 0.0));
     glfwSetWindowUserPointer(window, &cam);
     
     shaderProgram.use();
