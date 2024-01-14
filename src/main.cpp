@@ -16,7 +16,9 @@
 #define GRIDSIZE 20
 
 
-
+int gridPosX = WATERSIZE / 2;
+int gridPosY = WATERSIZE / 2;
+bool createDisturbance = false;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, Camera& cam, float deltaTime);
@@ -164,7 +166,7 @@ int main() {
             }
         }
         */
-        spikeyData[WATERSIZE / 2][WATERSIZE / 2] = -10.0f;
+        //spikeyData[WATERSIZE / 2][WATERSIZE / 2] = -10.0f;
         // Initialize textures with zeros
         glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, WATERSIZE, WATERSIZE, 0, GL_RED, GL_FLOAT, spikeyData);
     }
@@ -190,6 +192,14 @@ int main() {
 
         // Process input using deltaTime
         processInput(window, cam, deltaTime);
+
+        if (createDisturbance) {
+            // Bind the texture you want to update
+            glBindTexture(GL_TEXTURE_2D, waterTextures[currentTextureIndex]);
+            float disturbanceValue = -0.0001f; 
+            glTexSubImage2D(GL_TEXTURE_2D, 0, gridPosX, gridPosY, 1, 1, GL_RED, GL_FLOAT, &disturbanceValue);
+            createDisturbance = false;
+        }
 
         // Bind the textures for the compute shader
         shaderCompute.use();
@@ -260,8 +270,18 @@ void processInput(GLFWwindow* window, Camera& cam, float deltaTime) {
         cam.moveRight(deltaTime);
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
         cam.moveDown(deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_E == GLFW_PRESS))
         cam.moveUp(deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) 
+        gridPosY = std::max(0, gridPosY - 1);
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) 
+        gridPosY = std::min(WATERSIZE - 1, gridPosY + 1);
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        gridPosX = std::max(0, gridPosX - 1);
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        gridPosX = std::min(WATERSIZE - 1, gridPosX + 1);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        createDisturbance = true;
     glm::vec3 camPosition = cam.getPosition();
 
     bool xKeyDown = glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS;
