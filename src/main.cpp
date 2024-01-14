@@ -270,7 +270,7 @@ void processInput(GLFWwindow* window, Camera& cam, float deltaTime) {
         cam.moveRight(deltaTime);
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
         cam.moveDown(deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_E == GLFW_PRESS))
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
         cam.moveUp(deltaTime);
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) 
         gridPosY = std::max(0, gridPosY - 1);
