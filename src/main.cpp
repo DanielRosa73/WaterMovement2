@@ -6,14 +6,15 @@
 
 #include <camera.h>
 #include <graphics/shader.h>
+#include <graphics/texture.h>
 
 #include <cmath>
 
 
 #define WINDOW_HEIGHT 900
 #define WINDOW_WITDTH 1440
-#define WATERSIZE 20
-#define GRIDSIZE 20
+#define WATERSIZE 21
+#define GRIDSIZE 21
 
 
 int gridPosX = WATERSIZE / 2;
@@ -29,9 +30,9 @@ void generateGrid(int gridSize, std::vector<GLfloat>& vertices, std::vector<GLui
     // Générer les vertices pour la grille
     for (int y = 0; y <= gridSize; ++y) {
         for (int x = 0; x <= gridSize; ++x) {
-            float xPos = (float)x - 0.5f * gridSize;
+            float xPos = (float)x - 0.5 * gridSize;
             float yPos = 0.0f;
-            float zPos = (float)y - 0.5f * gridSize;
+            float zPos = (float)y - 0.5 * gridSize;
 
             vertices.push_back(xPos); // Coordonnée X
             vertices.push_back(yPos); // Coordonnée Y
@@ -59,7 +60,107 @@ void generateGrid(int gridSize, std::vector<GLfloat>& vertices, std::vector<GLui
     }
 }
 
+float halfGridSize = (GRIDSIZE) / 2.0;
 
+
+GLfloat wallLow = -50.0, wallUp = 2.0;
+GLfloat offset = 0.0;//abs(wallLow / 20.0);
+GLfloat wallVertices[] = {
+    // Front face
+    -halfGridSize + offset, wallLow, halfGridSize - offset,      0.0,  0.0,  1.0,      0.0, 0.0,
+    -halfGridSize,  wallUp, halfGridSize,      0.0,  0.0,  1.0,      0.0, 1.0,
+     halfGridSize,  wallUp, halfGridSize,      0.0,  0.0,  1.0,      1.0, 1.0,
+     halfGridSize - offset, wallLow, halfGridSize - offset,      0.0,  0.0,  1.0,      1.0, 0.0,
+
+    // Left face
+    -halfGridSize + offset, wallLow,  halfGridSize - offset,    -1.0,  0.0,  0.0,      1.0, 0.0,
+    -halfGridSize,  wallUp,  halfGridSize,    -1.0,  0.0,  0.0,      1.0, 1.0,
+    -halfGridSize,  wallUp, -halfGridSize,    -1.0,  0.0,  0.0,      0.0, 1.0,
+    -halfGridSize + offset, wallLow, -halfGridSize + offset,    -1.0,  0.0,  0.0,      0.0, 0.0,
+
+    // Right face
+     halfGridSize - offset, wallLow,  halfGridSize - offset,     1.0,  0.0,  0.0,      0.0, 0.0,
+     halfGridSize,  wallUp,  halfGridSize,     1.0,  0.0,  0.0,      0.0, 1.0,
+     halfGridSize,  wallUp, -halfGridSize,     1.0,  0.0,  0.0,      1.0, 1.0,
+     halfGridSize - offset, wallLow, -halfGridSize + offset,     1.0,  0.0,  0.0,      1.0, 0.0,
+
+    // Back face
+    -halfGridSize + offset, wallLow, -halfGridSize + offset,      0.0,  0.0, -1.0,      0.0, 1.0,
+    -halfGridSize,  wallUp, -halfGridSize,      0.0,  0.0, -1.0,      1.0, 1.0,
+     halfGridSize,  wallUp, -halfGridSize,      0.0,  0.0, -1.0,      1.0, 0.0,//
+     halfGridSize - offset, wallLow, -halfGridSize + offset,      0.0,  0.0, -1.0,      0.0, 0.0,
+
+    // Bottom face
+    -halfGridSize, wallLow,  halfGridSize,      0.0, -1.0,  0.0,      0.0, 1.0,
+    -halfGridSize, wallLow, -halfGridSize,      0.0, -1.0,  0.0,      0.0, 0.0,
+     halfGridSize, wallLow, -halfGridSize,      0.0, -1.0,  0.0,      1.0, 0.0,
+     halfGridSize, wallLow,  halfGridSize,      0.0, -1.0,  0.0,      1.0, 1.0
+};
+
+GLuint wallIndices[] = {
+    // Front face
+    0, 1, 2, // Première moitié du rectangle (triangle)
+    2, 3, 0, // Deuxième moitié du rectangle (triangle)
+
+    // Left face
+    4, 5, 6, // Première moitié du rectangle (triangle)
+    6, 7, 4, // Deuxième moitié du rectangle (triangle)
+
+    // Right face
+    8, 9, 10, // Première moitié du rectangle (triangle)
+    10, 11, 8, // Deuxième moitié du rectangle (triangle)
+
+    // Back face
+    12, 13, 14, // Première moitié du rectangle (triangle)
+    14, 15, 12,  // Deuxième moitié du rectangle (triangle)
+
+    // Bottom face
+    16, 17, 18,
+    18, 19, 16
+};
+
+
+
+
+
+
+
+GLuint createWall() {
+    GLuint VAO, VBO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    // Configurer le buffer de vertex
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(wallVertices), wallVertices, GL_STATIC_DRAW);
+
+    // Configurer le buffer d'indices
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(wallIndices), wallIndices, GL_STATIC_DRAW);
+
+    // Définir le format des données de vertex
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
+
+    return VAO;
+}
+
+void drawWall(const Camera &camera, Shader &shaderProgram, GLuint wallVAO) {
+    shaderProgram.use();
+    glBindVertexArray(wallVAO);
+    shaderProgram.setMat4("projection", camera.getProjectionMatrix());
+    shaderProgram.setMat4("view", camera.getViewMatrix());
+    glDrawElements(GL_TRIANGLES, sizeof(wallIndices) / sizeof(GLuint), GL_UNSIGNED_INT, (void*)0);
+}
 
 
 int main() {
@@ -97,6 +198,9 @@ int main() {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+
+    GLuint wallVAO = createWall();
+
     std::vector<GLfloat> vertices;
     std::vector<GLuint> indices;
 
@@ -122,9 +226,13 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(0);
 
-    Shader shaderProgram("/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.vtx.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.frg.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.tess.ctrl.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.tess.eval.glsl");
-    Shader shaderCompute("/home/daniel.rosa/afs/pogla/POGLA/shaders/ripple.comp.glsl");
 
+    Shader wallShader("../../shaders/wall.vtx.glsl", "../../shaders/wall.frg.glsl");
+    Shader shaderProgram("../../shaders/grid.vtx.glsl", "../../shaders/grid.frg.glsl", "../../shaders/grid.tess.ctrl.glsl", "../../shaders/grid.tess.eval.glsl");
+    Shader shaderCompute("../../shaders/ripple.comp.glsl");
+
+    Texture marble("../../textures/marble.png");
+    marble.bind();
 
     int height, width;
     glfwGetWindowSize(window, &width, &height);
@@ -203,7 +311,7 @@ int main() {
 
         // Bind the textures for the compute shader
         shaderCompute.use();
-        shaderCompute.setFloat("deltaTime", static_cast<float>(deltaTime));
+        shaderCompute.setFloat("deltaTime", static_cast<float>(deltaTime * 2));
         shaderCompute.setInt("WATERSIZE", WATERSIZE);
  
         glBindImageTexture(0, waterTextures[currentTextureIndex], 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32F);
@@ -216,7 +324,7 @@ int main() {
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
         // Clear the screen
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.4f, 0.4f, 0.8f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Set view and projection matrices in the shader
@@ -231,7 +339,12 @@ int main() {
         shaderProgram.setInt("waterHeightMap", 0);  // Set the uniform
 
         // Render the grid
+        glBindVertexArray(VAO);
         glDrawElements(GL_PATCHES, indices.size(), GL_UNSIGNED_INT, 0);
+
+        // marble.bind();
+        drawWall(cam, wallShader, wallVAO);
+
 
         // Swap the texture index for the next frame
         currentTextureIndex = 1 - currentTextureIndex;
@@ -253,13 +366,13 @@ float lastY = WINDOW_HEIGHT / 2.0f;
 bool firstMouse = true;
 bool xKeyPressed = false;
 bool wireframeMode = false;
+bool spaceKeyPressed = false;
 
 // Fonction pour gérer les entrées clavier
 void processInput(GLFWwindow* window, Camera& cam, float deltaTime) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    glm::vec3 initialCamPosition = cam.getPosition();
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cam.moveForward(deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -280,9 +393,6 @@ void processInput(GLFWwindow* window, Camera& cam, float deltaTime) {
         gridPosX = std::max(0, gridPosX - 1);
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
         gridPosX = std::min(WATERSIZE - 1, gridPosX + 1);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        createDisturbance = true;
-    glm::vec3 camPosition = cam.getPosition();
 
     bool xKeyDown = glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS;
 	if (xKeyDown && !xKeyPressed) {
@@ -293,6 +403,12 @@ void processInput(GLFWwindow* window, Camera& cam, float deltaTime) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 	xKeyPressed = xKeyDown;
+
+    bool spaceKeyDown = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS;
+    if (spaceKeyDown && !spaceKeyPressed) {
+        createDisturbance = !createDisturbance;
+    }
+    spaceKeyPressed = spaceKeyDown;
 }
 
 // Fonction de rappel appelée à chaque fois que la fenêtre est redimensionnée

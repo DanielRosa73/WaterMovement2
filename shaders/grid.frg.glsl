@@ -6,5 +6,6 @@ out vec4 FragColor;
 void main() {
     // Map the normal vector components to color
     vec3 color = normal * 0.5 + 0.5; // Normalizing from [-1, 1] to [0, 1]
+    color.r = color.r / 3.0;
     FragColor = vec4(color, 1.0);
 }
