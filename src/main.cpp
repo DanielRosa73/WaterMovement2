@@ -16,6 +16,7 @@
 #define WATERSIZE 100 //il faut laisser ces tailles
 #define GRIDSIZE 50 //ici aussi
 
+bool reset = false;
 
 int gridPosX = WATERSIZE / 2;
 int gridPosY = WATERSIZE / 2;
@@ -282,6 +283,19 @@ int main() {
     double totalTime = 0.0f;
     // Boucle de rendu
     while (!glfwWindowShouldClose(window)) {
+        if (reset) {
+            glGenTextures(2, waterTextures);
+            for (int i = 0; i < 2; ++i) {
+                glBindTexture(GL_TEXTURE_2D, waterTextures[i]);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                float spikeyData[WATERSIZE][WATERSIZE] = {0};
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, WATERSIZE, WATERSIZE, 0, GL_RED, GL_FLOAT, spikeyData);
+            }
+            reset = false;
+        }
         // Calculate the delta time
         double currentTime = glfwGetTime();
         double deltaTime = currentTime - lastTime;
@@ -342,7 +356,7 @@ int main() {
         glBindVertexArray(VAO);
         glDrawElements(GL_PATCHES, indices.size(), GL_UNSIGNED_INT, 0);
 
-        // marble.bind();
+        marble.bind();
         drawWall(cam, wallShader, wallVAO);
 
 
@@ -367,6 +381,7 @@ bool firstMouse = true;
 bool xKeyPressed = false;
 bool wireframeMode = false;
 bool spaceKeyPressed = false;
+bool kKeyPressed = false;
 
 // Fonction pour gérer les entrées clavier
 void processInput(GLFWwindow* window, Camera& cam, float deltaTime) {
@@ -409,6 +424,13 @@ void processInput(GLFWwindow* window, Camera& cam, float deltaTime) {
         createDisturbance = !createDisturbance;
     }
     spaceKeyPressed = spaceKeyDown;
+
+    bool kKeyDown = glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS;
+    if (kKeyDown && !kKeyPressed) {
+        createDisturbance = false;
+        reset = !reset;
+    }
+    kKeyPressed = kKeyDown;
 }
 
 // Fonction de rappel appelée à chaque fois que la fenêtre est redimensionnée
