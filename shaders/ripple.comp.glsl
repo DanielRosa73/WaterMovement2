@@ -7,8 +7,8 @@ layout(binding = 1, r32f) uniform image2D currentWaterSurface;
 
 uniform float deltaTime;
 uniform int WATERSIZE;
-uniform float waveSpeed = 2.0;
-uniform float dampingFactor = 1.0;
+uniform float waveSpeed = 4.0;
+uniform float dampingFactor = 0.6;
 uniform float edgeDampingFactor = 2.0; // Higher damping factor for edges
 
 void main() {

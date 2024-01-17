@@ -14,7 +14,7 @@ void main() {
         vec4 viewPos = view * p;
 
         // Calculate tessellation level based on distance
-        float level = 1; //tessFactor + distanceFactor / abs(viewPos.z);
+        float level = 4; //tessFactor + distanceFactor / abs(viewPos.z);
 
         // Set tessellation levels
         gl_TessLevelInner[0] = level;

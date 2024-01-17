@@ -48,6 +48,8 @@ vec2 getHorizontalDisplacement(vec2 normalizedPos) {
 void main() {
     vec3 worldPos = getWorldPos(gl_TessCoord);
     vec2 normalizedPos = (worldPos.xz + vec2(0.5 * WATERSIZE)) / WATERSIZE;
+    normalizedPos = normalizedPos * 2.0 - vec2(0.5); // Adjusting for 100x100 heightmap
+    
     float height = interpolatedHeight(normalizedPos);
     worldPos.y += height;
 
