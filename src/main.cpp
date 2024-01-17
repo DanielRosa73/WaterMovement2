@@ -13,8 +13,8 @@
 
 #define WINDOW_HEIGHT 900
 #define WINDOW_WITDTH 1440
-#define WATERSIZE 21
-#define GRIDSIZE 21
+#define WATERSIZE 100 //il faut laisser ces tailles
+#define GRIDSIZE 50 //ici aussi
 
 
 int gridPosX = WATERSIZE / 2;
@@ -227,11 +227,11 @@ int main() {
     glEnableVertexAttribArray(0);
 
 
-    Shader wallShader("../../shaders/wall.vtx.glsl", "../../shaders/wall.frg.glsl");
-    Shader shaderProgram("../../shaders/grid.vtx.glsl", "../../shaders/grid.frg.glsl", "../../shaders/grid.tess.ctrl.glsl", "../../shaders/grid.tess.eval.glsl");
-    Shader shaderCompute("../../shaders/ripple.comp.glsl");
+    Shader wallShader("/home/daniel.rosa/afs/pogla/POGLA/shaders/wall.vtx.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/wall.frg.glsl");
+    Shader shaderProgram("/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.vtx.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.frg.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.tess.ctrl.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.tess.eval.glsl");
+    Shader shaderCompute("/home/daniel.rosa/afs/pogla/POGLA/shaders/ripple.comp.glsl");
 
-    Texture marble("../../textures/marble.png");
+    Texture marble("/home/daniel.rosa/afs/pogla/POGLA/textures/marble.png");
     marble.bind();
 
     int height, width;
