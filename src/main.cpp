@@ -13,7 +13,7 @@
 
 #define WINDOW_HEIGHT 900
 #define WINDOW_WITDTH 1440
-#define WATERSIZE 100 //il faut laisser ces tailles
+#define WATERSIZE 50 //il faut laisser ces tailles
 #define GRIDSIZE 50 //ici aussi
 
 bool reset = false;
@@ -226,11 +226,11 @@ int main() {
     glEnableVertexAttribArray(0);
 
 
-    Shader wallShader("../../shaders/wall.vtx.glsl", "../../shaders/wall.frg.glsl");
-    Shader shaderProgram("../../shaders/grid.vtx.glsl", "../../shaders/grid.frg.glsl", "../../shaders/grid.tess.ctrl.glsl", "../../shaders/grid.tess.eval.glsl");
-    Shader shaderCompute("../../shaders/ripple.comp.glsl");
+    Shader wallShader("./shaders/wall.vtx.glsl", "./shaders/wall.frg.glsl");
+    Shader shaderProgram("./shaders/grid.vtx.glsl", "./shaders/grid.frg.glsl", "./shaders/grid.tess.ctrl.glsl", "./shaders/grid.tess.eval.glsl");
+    Shader shaderCompute("./shaders/ripple.comp.glsl");
 
-    Texture marble("../../textures/marble.png");
+    Texture marble("./textures/marble.png");
     marble.bind();
 
     int height, width;
