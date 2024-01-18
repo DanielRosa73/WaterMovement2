@@ -20,6 +20,7 @@ bool reset = false;
 
 bool noColor = false;
 bool normalColor = false;
+bool marbleBind = false;
 
 int gridPosX = WATERSIZE / 2;
 int gridPosY = WATERSIZE / 2;
@@ -31,16 +32,15 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
 
 void generateGrid(int gridSize, std::vector<GLfloat>& vertices, std::vector<GLuint>& indices) {
-    // Générer les vertices pour la grille
     for (int y = 0; y <= gridSize; ++y) {
         for (int x = 0; x <= gridSize; ++x) {
             float xPos = (float)x - 0.5 * gridSize;
             float yPos = 0.0f;
             float zPos = (float)y - 0.5 * gridSize;
 
-            vertices.push_back(xPos); // Coordonnée X
-            vertices.push_back(yPos); // Coordonnée Y
-            vertices.push_back(zPos); // Coordonnée Z (tous les points sont sur un plan)
+            vertices.push_back(xPos);
+            vertices.push_back(yPos);
+            vertices.push_back(zPos);
         }
     }
 
@@ -132,15 +132,12 @@ GLuint createWall() {
 
     glBindVertexArray(VAO);
 
-    // Configurer le buffer de vertex
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(wallVertices), wallVertices, GL_STATIC_DRAW);
 
-    // Configurer le buffer d'indices
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(wallIndices), wallIndices, GL_STATIC_DRAW);
 
-    // Définir le format des données de vertex
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -163,17 +160,11 @@ void drawWall(const Camera &camera, Shader &shaderProgram, GLuint wallVAO) {
 
 
 int main() {
-    // Initialisation de GLFW
     glfwInit();
-
-    // Configuration de GLFW
-    // Spécifiez que vous voulez utiliser OpenGL version 4.5
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-    // Utiliser le profil Core
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    // Création de la fenêtre
     GLFWwindow* window = glfwCreateWindow(800, 600, "POGLA", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -182,17 +173,13 @@ int main() {
     }
     glfwMakeContextCurrent(window);
 
-    // Initialisation de GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-
-    // Définir la taille de la zone de rendu
     glViewport(0, 0, 800, 600);
     glEnable(GL_DEPTH_TEST);
 
-    // Enregistrer la fonction de rappel pour le redimensionnement de la fenêtre
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -202,8 +189,6 @@ int main() {
 
     std::vector<GLfloat> vertices;
     std::vector<GLuint> indices;
-
-    // Générer une grille de taille 10x10
     generateGrid(GRIDSIZE, vertices, indices);
 
     GLuint VAO, VBO, EBO;
@@ -213,24 +198,21 @@ int main() {
 
     glBindVertexArray(VAO);
 
-    // Configurer le buffer de vertex
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
 
-    // Configurer le buffer d'indices
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
-    // Définir le format des données de vertex
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(0);
 
 
-    Shader wallShader("./shaders/wall.vtx.glsl", "./shaders/wall.frg.glsl");
-    Shader shaderProgram("./shaders/grid.vtx.glsl", "./shaders/grid.frg.glsl", "./shaders/grid.tess.ctrl.glsl", "./shaders/grid.tess.eval.glsl");
-    Shader shaderCompute("./shaders/ripple.comp.glsl");
+    Shader wallShader("../../shaders/wall.vtx.glsl", "../../shaders/wall.frg.glsl");
+    Shader shaderProgram("../../shaders/grid.vtx.glsl", "../../shaders/grid.frg.glsl", "../../shaders/grid.tess.ctrl.glsl", "../../shaders/grid.tess.eval.glsl");
+    Shader shaderCompute("../../shaders/ripple.comp.glsl");
 
-    Texture marble("./textures/marble.png");
+    Texture marble("../../textures/marble.png");
     marble.bind();
 
     int height, width;
@@ -248,12 +230,10 @@ int main() {
     glBindVertexArray(VAO);
 
     double lastTime = glfwGetTime();
-    double lastFPSTime = lastTime; // Variable séparée pour le compteur de FPS
+    double lastFPSTime = lastTime;
     int nbFrames = 0;
 
     int currentTextureIndex = 0;
-
-        // Texture creation for water simulation
     GLuint waterTextures[2];
     glGenTextures(2, waterTextures);
     for (int i = 0; i < 2; ++i) {
@@ -262,9 +242,6 @@ int main() {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-
-        // Create gradient data
         float spikeyData[WATERSIZE][WATERSIZE] = {0};
         /*
         for (int y = 0; y < WATERSIZE; y+=3) {
@@ -279,7 +256,6 @@ int main() {
     }
 
     double totalTime = 0.0f;
-    // Boucle de rendu
     while (!glfwWindowShouldClose(window)) {
         if (reset) {
             glGenTextures(2, waterTextures);
@@ -294,12 +270,9 @@ int main() {
             }
             reset = false;
         }
-        // Calculate the delta time
         double currentTime = glfwGetTime();
         double deltaTime = currentTime - lastTime;
         lastTime = currentTime;
-
-        // Update the FPS counter
         nbFrames++;
         if (currentTime - lastFPSTime >= 1.0) {
             std::stringstream ss;
@@ -310,18 +283,15 @@ int main() {
             lastFPSTime = currentTime;
         }
 
-        // Process input using deltaTime
         processInput(window, cam, deltaTime);
 
         if (createDisturbance) {
-            // Bind the texture you want to update
             glBindTexture(GL_TEXTURE_2D, waterTextures[currentTextureIndex]);
             float disturbanceValue = -0.0001f; 
             glTexSubImage2D(GL_TEXTURE_2D, 0, gridPosX, gridPosY, 1, 1, GL_RED, GL_FLOAT, &disturbanceValue);
             createDisturbance = false;
         }
 
-        // Bind the textures for the compute shader
         shaderCompute.use();
         shaderCompute.setFloat("deltaTime", static_cast<float>(deltaTime * 2));
         shaderCompute.setInt("WATERSIZE", WATERSIZE);
@@ -329,17 +299,13 @@ int main() {
         glBindImageTexture(0, waterTextures[currentTextureIndex], 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32F);
         glBindImageTexture(1, waterTextures[1 - currentTextureIndex], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32F);
 
-        // Dispatch the compute shader
-        glDispatchCompute((WATERSIZE + 15) / 16, (WATERSIZE + 15) / 16, 1); // Adjust the dispatch size as needed
+        glDispatchCompute((WATERSIZE + 15) / 16, (WATERSIZE + 15) / 16, 1);
 
-        // Synchronize to ensure texture writes are finished before reading in tessellation shader
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
-        // Clear the screen
         glClearColor(0.4f, 0.4f, 0.8f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Set view and projection matrices in the shader
         shaderProgram.use();
         shaderProgram.setFloat("deltaTime", static_cast<float>(deltaTime));
         shaderProgram.setMat4("view", cam.getViewMatrix());
@@ -350,30 +316,24 @@ int main() {
         shaderProgram.setBool("noColor", noColor);
         shaderProgram.setBool("normalColor", normalColor);
 
-        // Bind the current water texture for rendering
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, waterTextures[currentTextureIndex]);
-        shaderProgram.setInt("waterHeightMap", 0);  // Set the uniform
+        shaderProgram.setInt("waterHeightMap", 0);
 
-        // Render the grid
         glBindVertexArray(VAO);
         glDrawElements(GL_PATCHES, indices.size(), GL_UNSIGNED_INT, 0);
 
-        // marble.bind();
+        if (marbleBind)
+            marble.bind();
         drawWall(cam, wallShader, wallVAO);
 
-
-        // Swap the texture index for the next frame
         currentTextureIndex = 1 - currentTextureIndex;
 
-        // Swap buffers and poll IO events
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
     glBindVertexArray(0);
-
-    // Libération des ressources GLFW
     glfwTerminate();
     return 0;
 }
@@ -385,9 +345,9 @@ bool xKeyPressed = false;
 bool wireframeMode = false;
 bool spaceKeyPressed = false;
 bool kKeyPressed = false;
+bool tKeyPressed = false;
 bool nKeyPressed = false;
 
-// Fonction pour gérer les entrées clavier
 void processInput(GLFWwindow* window, Camera& cam, float deltaTime) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -445,9 +405,15 @@ void processInput(GLFWwindow* window, Camera& cam, float deltaTime) {
         normalColor = !normalColor;
     }
     nKeyPressed = nKeyDown;
+
+    bool tKeyDown = glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS;
+    if (tKeyDown && !tKeyPressed) {
+        marbleBind = !marbleBind;
+    }
+    tKeyPressed = tKeyDown;
 }
 
-// Fonction de rappel appelée à chaque fois que la fenêtre est redimensionnée
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 
@@ -466,7 +432,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     }
 
     float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // Inversé puisque y-coordonnées vont de bas en haut
+    float yoffset = lastY - ypos;
     lastX = xpos;
     lastY = ypos;
 
