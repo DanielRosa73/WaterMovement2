@@ -2,12 +2,16 @@
 
 layout(triangles, equal_spacing, cw) in;
 
+layout (location = 0) in vec3 tcPos[];
+layout (location = 1) in vec3 tcNor[];
+
 uniform mat4 view;
 uniform mat4 projection;
 uniform sampler2D waterHeightMap;
 uniform int WATERSIZE;
 uniform float deltaTime; // Uniform for time to add motion
 
+out vec3 position;
 out vec3 normal;
 
 vec3 getWorldPos(vec3 barycentricCoords) {
@@ -63,6 +67,10 @@ void main() {
     vec3 bitangent = vec3(0.0, heightUp - heightDown, 2.0 / WATERSIZE);
 
     normal = normalize(cross(tangent, bitangent));
+    position = worldPos;
+    //normal = normalize(tcNor[0] * gl_TessCoord.x + 
+    //                  tcNor[1] * gl_TessCoord.y + 
+    //                  tcNor[2] * gl_TessCoord.z);
 
     gl_Position = projection * view * vec4(worldPos, 1.0);
 }

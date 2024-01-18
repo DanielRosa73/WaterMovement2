@@ -121,11 +121,6 @@ GLuint wallIndices[] = {
 };
 
 
-
-
-
-
-
 GLuint createWall() {
     GLuint VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -228,11 +223,11 @@ int main() {
     glEnableVertexAttribArray(0);
 
 
-    Shader wallShader("/home/daniel.rosa/afs/pogla/POGLA/shaders/wall.vtx.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/wall.frg.glsl");
-    Shader shaderProgram("/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.vtx.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.frg.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.tess.ctrl.glsl", "/home/daniel.rosa/afs/pogla/POGLA/shaders/grid.tess.eval.glsl");
-    Shader shaderCompute("/home/daniel.rosa/afs/pogla/POGLA/shaders/ripple.comp.glsl");
+    Shader wallShader("../../shaders/wall.vtx.glsl", "../../shaders/wall.frg.glsl");
+    Shader shaderProgram("../../shaders/grid.vtx.glsl", "../../shaders/grid.frg.glsl", "../../shaders/grid.tess.ctrl.glsl", "../../shaders/grid.tess.eval.glsl");
+    Shader shaderCompute("../../shaders/ripple.comp.glsl");
 
-    Texture marble("/home/daniel.rosa/afs/pogla/POGLA/textures/marble.png");
+    Texture marble("../../textures/marble.png");
     marble.bind();
 
     int height, width;
@@ -346,6 +341,9 @@ int main() {
         shaderProgram.setFloat("deltaTime", static_cast<float>(deltaTime));
         shaderProgram.setMat4("view", cam.getViewMatrix());
         shaderProgram.setMat4("projection", cam.getProjectionMatrix());
+        shaderProgram.setVec3("viewPos", cam.getPosition());
+        shaderProgram.setVec3("lightPos", glm::vec3(0.0, 10.0, 0.0));
+        shaderProgram.setVec3("lightColor", glm::vec3(1.0));
 
         // Bind the current water texture for rendering
         glActiveTexture(GL_TEXTURE0);
@@ -356,7 +354,7 @@ int main() {
         glBindVertexArray(VAO);
         glDrawElements(GL_PATCHES, indices.size(), GL_UNSIGNED_INT, 0);
 
-        marble.bind();
+        // marble.bind();
         drawWall(cam, wallShader, wallVAO);
 
 

@@ -2,9 +2,15 @@
 
 layout(vertices = 3) out;
 
+layout (location = 0) in vec3 vPos[];
+layout (location = 1) in vec3 vNor[];
+
 uniform mat4 view; // Camera view matrix
 uniform float tessFactor = 3.0; 
 uniform float distanceFactor = 0.1; 
+
+layout (location = 0) out vec3 tcPos[];
+layout (location = 1) out vec3 tcNor[];
 
 void main() {
     if (gl_InvocationID == 0) {
@@ -27,6 +33,8 @@ void main() {
 
     }
 
+    tcPos[gl_InvocationID] = vPos[gl_InvocationID];
+    tcNor[gl_InvocationID] = vNor[gl_InvocationID];
     // Pass the vertex position to the tessellation evaluation shader
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 }
