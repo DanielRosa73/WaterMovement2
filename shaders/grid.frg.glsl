@@ -20,7 +20,7 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
 
     vec3 waterColor = vec3(0.0, 0.3, 0.5);
-    float ambiant = 0.6;
+    float ambiant = 1.0f;
     vec3 result = (diff * lightColor + specularStrength * spec * lightColor + ambiant) * waterColor;
 
     FragColor = vec4(result, 1.0);
