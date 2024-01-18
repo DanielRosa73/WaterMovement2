@@ -1,6 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <thread>
+#include <chrono>
 #include <iostream>
 #include <vector>
 
@@ -255,8 +257,12 @@ int main() {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, WATERSIZE, WATERSIZE, 0, GL_RED, GL_FLOAT, spikeyData);
     }
 
+    int wantedFPS = 100;
+    const double frameTime = 1.0 / wantedFPS;
+
     double totalTime = 0.0f;
     while (!glfwWindowShouldClose(window)) {
+        double frameStartTime = glfwGetTime();
         if (reset) {
             glGenTextures(2, waterTextures);
             for (int i = 0; i < 2; ++i) {
@@ -331,6 +337,15 @@ int main() {
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+         double frameEndTime = glfwGetTime(); // Mesurer la fin de la frame
+        double elapsedTime = frameEndTime - frameStartTime; // Calculer le temps écoulé pour le rendu de la frame
+
+        // Si la frame a été rendue plus vite que le temps alloué, attendre le reste du temps
+        if (elapsedTime < frameTime) {
+            double remainingTime = frameTime - elapsedTime;
+            std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(remainingTime * 1000)));
+        }
     }
 
     glBindVertexArray(0);
