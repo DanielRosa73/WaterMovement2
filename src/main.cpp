@@ -18,6 +18,9 @@
 
 bool reset = false;
 
+bool noColor = false;
+bool normalColor = false;
+
 int gridPosX = WATERSIZE / 2;
 int gridPosY = WATERSIZE / 2;
 bool createDisturbance = false;
@@ -344,6 +347,8 @@ int main() {
         shaderProgram.setVec3("viewPos", cam.getPosition());
         shaderProgram.setVec3("lightPos", glm::vec3(0.0, 10.0, 0.0));
         shaderProgram.setVec3("lightColor", glm::vec3(1.0));
+        shaderProgram.setBool("noColor", noColor);
+        shaderProgram.setBool("normalColor", normalColor);
 
         // Bind the current water texture for rendering
         glActiveTexture(GL_TEXTURE0);
@@ -380,6 +385,7 @@ bool xKeyPressed = false;
 bool wireframeMode = false;
 bool spaceKeyPressed = false;
 bool kKeyPressed = false;
+bool nKeyPressed = false;
 
 // Fonction pour gérer les entrées clavier
 void processInput(GLFWwindow* window, Camera& cam, float deltaTime) {
@@ -410,10 +416,14 @@ void processInput(GLFWwindow* window, Camera& cam, float deltaTime) {
     bool xKeyDown = glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS;
 	if (xKeyDown && !xKeyPressed) {
 		wireframeMode = !wireframeMode;
-		if (wireframeMode)
+		if (wireframeMode) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		else
+            noColor = true;
+        }
+		else {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            noColor = false;
+        }
 	}
 	xKeyPressed = xKeyDown;
 
@@ -429,6 +439,12 @@ void processInput(GLFWwindow* window, Camera& cam, float deltaTime) {
         reset = !reset;
     }
     kKeyPressed = kKeyDown;
+
+    bool nKeyDown = glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS;
+    if (nKeyDown && !nKeyPressed) {
+        normalColor = !normalColor;
+    }
+    nKeyPressed = nKeyDown;
 }
 
 // Fonction de rappel appelée à chaque fois que la fenêtre est redimensionnée

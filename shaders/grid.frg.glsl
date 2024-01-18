@@ -7,9 +7,20 @@ uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform vec3 lightColor;
 
+uniform bool noColor;
+uniform bool normalColor;
+
 out vec4 FragColor;
 
 void main() {
+    if (noColor) {
+        FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+        return;
+    }
+    if (normalColor) {
+        FragColor = vec4(normal * 0.5 + 0.5, 1.0);
+        return;
+    }
     vec3 lightDir = normalize(lightPos - position);
     
     float diff = max(dot(normal, lightDir), 0.0);
